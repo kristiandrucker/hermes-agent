@@ -83,6 +83,12 @@ class TestCleanForDisplay:
         # "MEDIA:" in upper case without a path won't match \S+ (space follows)
         # But "media:" is lowercase so won't match either
         assert result == text
+    def test_strips_sent_timestamp_marker(self):
+        """Internal [sent: ...] markers are hidden from streamed display text."""
+        text = "[sent: 2026-06-08T07:06+02:00]\nwell it still does leak"
+        result = GatewayStreamConsumer._clean_for_display(text)
+        assert "[sent:" not in result
+        assert result == "well it still does leak"
 
 
 # ── Integration: _send_or_edit strips MEDIA: ─────────────────────────────

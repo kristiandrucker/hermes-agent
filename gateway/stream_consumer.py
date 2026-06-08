@@ -686,11 +686,14 @@ class GatewayStreamConsumer:
         stream finishes — we just need to hide the raw directives from the
         user.
         """
-        if "MEDIA:" not in text and "[[audio_as_voice]]" not in text:
-            return text
-        cleaned = text.replace("[[audio_as_voice]]", "")
-        cleaned = GatewayStreamConsumer._MEDIA_RE.sub("", cleaned)
-        # Collapse excessive blank lines left behind by removed tags
+        from agent.live_time_context import strip_sent_timestamp_prefix
+
+        needs_media_cleanup = "MEDIA:" in text or "[[audio_as_voice]]" in text
+        cleaned = strip_sent_timestamp_prefix(text)
+        if needs_media_cleanup:
+            cleaned = cleaned.replace("[[audio_as_voice]]", "")
+            cleaned = GatewayStreamConsumer._MEDIA_RE.sub("", cleaned)
+        # Collapse excessive blank lines left behind by removed tags/markers
         cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
         # Strip trailing whitespace/newlines but preserve leading content
         return cleaned.rstrip()
